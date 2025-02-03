@@ -4,7 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Find a Pair Game</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        body {
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+        }
+
+        .container {
+            max-width: 100%;
+            padding: 10px;
+        }
         /* Main container styling */
         .container {
             max-width: 800px;
@@ -75,6 +85,7 @@
 
         /* Game stats styling */
         .stats {
+            color:#ffffff;
             margin: 20px 0;
             font-size: 1.2em;
         }
@@ -98,7 +109,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Find a Pair Game</h1>
+        <h1 class="stats">Find a Pair Game</h1>
         <div class="stats">
             Moves: <span id="moves">0</span> | 
             Pairs Found: <span id="pairs">0</span>
@@ -108,12 +119,31 @@
     </div>
 
     <script>
+        const webapp = window.Telegram.WebApp;
+        webapp.ready();
+        webapp.expand();
         // Game state variables
         let cards = [];
         let flippedCards = [];
         let matchedPairs = 0;
         let moves = 0;
         let isProcessing = false;
+
+        function sendScoreToBot() {
+            webapp.sendData(JSON.stringify({
+                moves: moves,
+                pairs: matchedPairs,
+                completed: matchedPairs === 8
+            }));
+        }
+
+        // Modify the winning condition to use Telegram's native alerts
+        if (matchedPairs === 8) {
+            setTimeout(() => {
+                webapp.showAlert('Congratulations! You won!');
+                sendScoreToBot();
+            }, 500);
+        }
 
         // Initialize the game
         function initGame() {
