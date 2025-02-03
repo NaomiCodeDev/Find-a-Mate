@@ -1,268 +1,316 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Find a Pair Game</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body {
-            background-color: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000);
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Find a Pair Game</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      /* Цвета для светлой темы (по умолчанию) */
+      --bg-color-light: #ffffff;
+      --text-color-light: #000000;
 
-        .container {
-            max-width: 100%;
-            padding: 10px;
-        }
-        /* Main container styling */
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            text-align: center;
-            font-family: Arial, sans-serif;
-        }
+      /* Цвета для тёмной темы */
+      --bg-color-dark: #333333;
+      --text-color-dark: #f0f0f0;
+    }
 
-        /* Game board styling */
-        .game-board {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin: 20px auto;
-            max-width: 500px;
-        }
+    /* Используем переменные с учетом темы */
+    body {
+      background-color: var(--tg-theme-bg-color, var(--bg-color-light));
+      color: var(--tg-theme-text-color, var(--text-color-light));
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
 
-        /* Card wrapper styling */
-        .card-wrapper {
-            aspect-ratio: 3/4;
-            perspective: 1000px;
-        }
+    /* Переопределение для тёмной темы */
+    body.dark-theme {
+      background-color: var(--bg-color-dark);
+      color: var(--text-color-dark);
+    }
 
-        /* Individual card styling */
-        .card {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-            transform-style: preserve-3d;
-            transition: transform 0.3s ease;
-        }
+    .container {
+      max-width: 100%;
+      padding: 10px;
+    }
+    /* Main container styling */
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      text-align: center;
+      font-family: Arial, sans-serif;
+    }
 
-        /* Card faces styling */
-        .card-front, .card-back {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2em;
-            color: white;
-            border-radius: 5px;
-        }
+    /* Game board styling */
+    .game-board {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin: 20px auto;
+      max-width: 500px;
+    }
 
-        .card-front {
-            background-color: #2c3e50;
-        }
+    /* Card wrapper styling */
+    .card-wrapper {
+      aspect-ratio: 3/4;
+      perspective: 1000px;
+    }
 
-        .card-back {
-            background-color: #3498db;
-            transform: rotateY(180deg);
-        }
+    /* Individual card styling */
+    .card {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+      transform-style: preserve-3d;
+      transition: transform 0.3s ease;
+    }
 
-        /* Card flip animation */
-        .card.flipped {
-            transform: rotateY(180deg);
-        }
+    /* Card faces styling */
+    .card-front,
+    .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2em;
+      color: white;
+      border-radius: 5px;
+    }
 
-        /* Card matched state */
-        .card.matched .card-back {
-            background-color: #27ae60;
-            cursor: default;
-        }
+    .card-front {
+      background-color: #2c3e50;
+    }
 
-        /* Game stats styling */
-        .stats {
-            color:#ffffff;
-            margin: 20px 0;
-            font-size: 1.2em;
-        }
+    .card-back {
+      background-color: #3498db;
+      transform: rotateY(180deg);
+    }
 
-        /* Reset button styling */
-        .reset-btn {
-            padding: 10px 20px;
-            font-size: 1.1em;
-            background-color: #e74c3c;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
+    /* Card flip animation */
+    .card.flipped {
+      transform: rotateY(180deg);
+    }
 
-        .reset-btn:hover {
-            background-color: #c0392b;
-        }
-    </style>
+    /* Card matched state */
+    .card.matched .card-back {
+      background-color: #27ae60;
+      cursor: default;
+    }
+
+    /* Game stats styling */
+    .stats {
+      /* Убираем фиксированный цвет, чтобы текст наследовался от body */
+      /* color: #ffffff; */
+      margin: 20px 0;
+      font-size: 1.2em;
+    }
+
+    /* Reset button styling */
+    .reset-btn,
+    .theme-toggle-btn {
+      padding: 10px 20px;
+      font-size: 1.1em;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      margin: 5px;
+    }
+
+    .reset-btn {
+      background-color: #e74c3c;
+      color: white;
+    }
+
+    .reset-btn:hover {
+      background-color: #c0392b;
+    }
+
+    .theme-toggle-btn {
+      background-color: #3498db;
+      color: white;
+    }
+
+    .theme-toggle-btn:hover {
+      background-color: #2980b9;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1 class="stats">Find a Pair Game</h1>
-        <div class="stats">
-            Moves: <span id="moves">0</span> | 
-            Pairs Found: <span id="pairs">0</span>
-        </div>
-        <div class="game-board" id="gameBoard"></div>
-        <button class="reset-btn" onclick="resetGame()">Reset Game</button>
+  <div class="container">
+    <h1 class="stats">Игрушка найти пару</h1>
+    <div class="stats">
+      Шагов: <span id="moves">0</span> | Наденных пар: <span id="pairs">0</span>
     </div>
+    <div class="game-board" id="gameBoard"></div>
+    <div>
+      <button class="reset-btn" onclick="resetGame()">Начать заново</button>
+      <button class="theme-toggle-btn" onclick="toggleTheme()">Переключить темку</button>
+    </div>
+  </div>
 
-    <script>
-        const webapp = window.Telegram.WebApp;
-        webapp.ready();
-        webapp.expand();
-        // Game state variables
-        let cards = [];
-        let flippedCards = [];
-        let matchedPairs = 0;
-        let moves = 0;
-        let isProcessing = false;
+  <script>
+    const webapp = window.Telegram.WebApp;
+    webapp.ready();
+    webapp.expand();
 
-        function sendScoreToBot() {
-            webapp.sendData(JSON.stringify({
-                moves: moves,
-                pairs: matchedPairs,
-                completed: matchedPairs === 8
-            }));
-        }
+    // Переменная для хранения текущей темы (по умолчанию светлая)
+    let isDarkTheme = false;
 
-        // Modify the winning condition to use Telegram's native alerts
-        if (matchedPairs === 8) {
+    function toggleTheme() {
+      isDarkTheme = !isDarkTheme;
+      if (isDarkTheme) {
+        document.body.classList.add('dark-theme');
+      } else {
+        document.body.classList.remove('dark-theme');
+      }
+    }
+
+    // Game state variables
+    let cards = [];
+    let flippedCards = [];
+    let matchedPairs = 0;
+    let moves = 0;
+    let isProcessing = false;
+
+    function sendScoreToBot() {
+      webapp.sendData(
+        JSON.stringify({
+          moves: moves,
+          pairs: matchedPairs,
+          completed: matchedPairs === 8
+        })
+      );
+    }
+
+    // Инициализация игры
+    function initGame() {
+      // Создаём массив пар чисел (от 1 до 8, по два раза)
+      cards = [];
+      for (let i = 1; i <= 8; i++) {
+        cards.push(i, i);
+      }
+
+      // Перемешиваем массив
+      shuffleArray(cards);
+
+      // Сброс состояния игры
+      flippedCards = [];
+      matchedPairs = 0;
+      moves = 0;
+      isProcessing = false;
+
+      // Обновляем интерфейс
+      updateStats();
+      createBoard();
+    }
+
+    // Перемешиваем массив алгоритмом Фишера-Йетса
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    // Создаём игровое поле
+    function createBoard() {
+      const gameBoard = document.getElementById('gameBoard');
+      gameBoard.innerHTML = '';
+
+      cards.forEach((num, index) => {
+        // Создаём обёртку для карты
+        const cardWrapper = document.createElement('div');
+        cardWrapper.className = 'card-wrapper';
+
+        // Создаём карту
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.dataset.index = index;
+        card.dataset.value = num;
+        card.onclick = () => flipCard(card);
+
+        // Создаём переднюю сторону карты
+        const cardFront = document.createElement('div');
+        cardFront.className = 'card-front';
+
+        // Создаём заднюю сторону карты
+        const cardBack = document.createElement('div');
+        cardBack.className = 'card-back';
+        cardBack.textContent = num;
+
+        // Собираем карту
+        card.appendChild(cardFront);
+        card.appendChild(cardBack);
+        cardWrapper.appendChild(card);
+        gameBoard.appendChild(cardWrapper);
+      });
+    }
+
+    // Обработка переворота карты
+    async function flipCard(card) {
+      if (
+        isProcessing ||
+        flippedCards.length >= 2 ||
+        card.classList.contains('flipped') ||
+        card.classList.contains('matched')
+      ) {
+        return;
+      }
+
+      // Переворачиваем карту
+      card.classList.add('flipped');
+      flippedCards.push(card);
+
+      if (flippedCards.length === 2) {
+        moves++;
+        updateStats();
+        isProcessing = true;
+
+        // Проверяем совпадение
+        if (flippedCards[0].dataset.value === flippedCards[1].dataset.value) {
+          // Найдена пара
+          flippedCards.forEach(card => card.classList.add('matched'));
+          matchedPairs++;
+          updateStats();
+
+          if (matchedPairs === 8) {
             setTimeout(() => {
-                webapp.showAlert('Congratulations! You won!');
-                sendScoreToBot();
+              webapp.showAlert('Congratulations! You won!');
+              sendScoreToBot();
             }, 500);
+          }
+        } else {
+          // Нет совпадения
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          flippedCards.forEach(card => {
+            card.classList.remove('flipped');
+          });
         }
 
-        // Initialize the game
-        function initGame() {
-            // Create array with pairs of numbers (1-8 twice)
-            cards = [];
-            for (let i = 1; i <= 8; i++) {
-                cards.push(i, i);
-            }
-            
-            // Shuffle the array
-            shuffleArray(cards);
-            
-            // Reset game state
-            flippedCards = [];
-            matchedPairs = 0;
-            moves = 0;
-            isProcessing = false;
-            
-            // Update UI
-            updateStats();
-            createBoard();
-        }
+        flippedCards = [];
+        isProcessing = false;
+      }
+    }
 
-        // Shuffle array using Fisher-Yates algorithm
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-        }
+    // Обновление статистики игры
+    function updateStats() {
+      document.getElementById('moves').textContent = moves;
+      document.getElementById('pairs').textContent = matchedPairs;
+    }
 
-        // Create the game board
-        function createBoard() {
-            const gameBoard = document.getElementById('gameBoard');
-            gameBoard.innerHTML = '';
-            
-            cards.forEach((num, index) => {
-                // Create card wrapper
-                const cardWrapper = document.createElement('div');
-                cardWrapper.className = 'card-wrapper';
+    // Сброс игры
+    function resetGame() {
+      initGame();
+    }
 
-                // Create card
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.dataset.index = index;
-                card.dataset.value = num;
-                card.onclick = () => flipCard(card);
-
-                // Create card front face
-                const cardFront = document.createElement('div');
-                cardFront.className = 'card-front';
-
-                // Create card back face
-                const cardBack = document.createElement('div');
-                cardBack.className = 'card-back';
-                cardBack.textContent = num;
-
-                // Assemble card
-                card.appendChild(cardFront);
-                card.appendChild(cardBack);
-                cardWrapper.appendChild(card);
-                gameBoard.appendChild(cardWrapper);
-            });
-        }
-
-        // Handle card flip
-        async function flipCard(card) {
-            if (isProcessing || 
-                flippedCards.length >= 2 || 
-                card.classList.contains('flipped') || 
-                card.classList.contains('matched')) {
-                return;
-            }
-
-            // Flip the card
-            card.classList.add('flipped');
-            flippedCards.push(card);
-
-            if (flippedCards.length === 2) {
-                moves++;
-                updateStats();
-                isProcessing = true;
-
-                // Check for match
-                if (flippedCards[0].dataset.value === flippedCards[1].dataset.value) {
-                    // Match found
-                    flippedCards.forEach(card => card.classList.add('matched'));
-                    matchedPairs++;
-                    updateStats();
-                    
-                    if (matchedPairs === 8) {
-                        setTimeout(() => alert('Congratulations! You won!'), 500);
-                    }
-                } else {
-                    // No match
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    flippedCards.forEach(card => {
-                        card.classList.remove('flipped');
-                    });
-                }
-
-                flippedCards = [];
-                isProcessing = false;
-            }
-        }
-
-        // Update game statistics
-        function updateStats() {
-            document.getElementById('moves').textContent = moves;
-            document.getElementById('pairs').textContent = matchedPairs;
-        }
-
-        // Reset the game
-        function resetGame() {
-            initGame();
-        }
-
-        // Start the game when the page loads
-        initGame();
-    </script>
+    // Запуск игры при загрузке страницы
+    initGame();
+  </script>
 </body>
 </html>
